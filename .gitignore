@@ -17,3 +17,5 @@
 .cxx
 
 #STM32 Project ignores
+/Project-STM32/Project-STM32.launch
+/Project-STM32/Debug
