@@ -1,0 +1,1 @@
+Projekt na stacji pogodowej na przedmiot Podstawy Techniki Mikroprocesorowej.
