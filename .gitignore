@@ -16,7 +16,4 @@
 .externalNativeBuild
 .cxx
 
-#Rest API ignores
-
-
 #STM32 Project ignores
