@@ -1,0 +1,22 @@
+#This is all in one .gitignore file
+#Mobile App ignores
+#*.iml
+.gradle
+/Mobile App/local.properties
+/Mobile App/.idea/caches
+/Mobile App/.idea/libraries
+/Mobile App/.idea/modules.xml
+/Mobile App/.idea/workspace.xml
+/Mobile App/.idea/navEditor.xml
+/Mobile App/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/Mobile App/app/build
+/captures
+.externalNativeBuild
+.cxx
+
+#Rest API ignores
+
+
+#STM32 Project ignores
