@@ -1,9 +1,11 @@
 package com.example.weatherapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,6 +24,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.concurrent.ExecutionException;
 
 
@@ -33,6 +36,8 @@ public class SecondActivity extends AppCompatActivity {
     Button searchButton;
     TextView result, mainTemper, tempBarInfo;
     ImageView icon;
+
+
 
     class Weather extends AsyncTask<String,Void,String>{
 
@@ -49,7 +54,7 @@ public class SecondActivity extends AppCompatActivity {
                     connection.connect();
                 }
                 else {
-                    url = new URL("https://openweathermap.org/data/2.5/weather?q=poznan&appid=b6907d289e10d714a6e88b30761fae22");
+                    url = new URL("https://openweathermap.org/data/2.5/weather?q=poznan&appid=439d4b804bc8187953eb36d2a8c26a02");
                     connection = (HttpURLConnection) url.openConnection();
                     connection.connect();
                 }
@@ -87,17 +92,21 @@ public class SecondActivity extends AppCompatActivity {
 
         String cName = cityName.getText().toString();
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        Boolean pref = sharedPreferences.getBoolean("Unit", false);
+
         String content;
         Weather weather = new Weather();
         try {
 
-            content = weather.execute("https://openweathermap.org/data/2.5/weather?q="+ cName +"&appid=b6907d289e10d714a6e88b30761fae22").get();
+            content = weather.execute("https://openweathermap.org/data/2.5/weather?q="+ cName +"&appid=439d4b804bc8187953eb36d2a8c26a02").get();
             Log.i("content", content);
 
             //JSON
             JSONObject jsonObject = new JSONObject(content);
             String weatherData = jsonObject.getString("weather");
             String mainTemperature = jsonObject.getString("main");
+            String city_name = jsonObject.getString("name");
 //            Log.i("weatherData",weatherData);
 
             JSONArray array = new JSONArray(weatherData);
@@ -131,31 +140,40 @@ public class SecondActivity extends AppCompatActivity {
             Log.i("description", description);*/
 
 
-         String iconUrl = "https://openweathermap.org/img/wn/" + iconCode + ".png";
+            String iconUrl = "https://openweathermap.org/img/wn/" + iconCode + ".png";
 
-         Picasso.get().load(iconUrl).error(R.drawable.ic_launcher_background).into(icon);
+            Picasso.get().load(iconUrl).error(R.drawable.ic_launcher_background).into(icon);
 
-          String resultText = "Main :                    " + main +
+            String resultText = "Main :                    " + main +
                     "\nDescription :       " + description +
                     "\nPressure :             " + pressure + " hPa" +
                     "\nHumidity :            " + humidity + " %";
 
-            //System.out.println(iconUrl);
+            System.out.println("-------------"+pref+"-------------");
 
-            int strLenght = temperature.length();
-            String tempRounded = "";
-            if(temperature.charAt(strLenght-3) == '.')
-            {
-                tempRounded = temperature.substring(0, temperature.length() - 1);
-            }
-            else{
+            String tempRounded = temperature;
+            DecimalFormat df = new DecimalFormat("###.#");
+
+            if(pref == true){
                 tempRounded = temperature;
+                float tmp = Float.valueOf(tempRounded);
+                tmp = (float) ((tmp * 1.8) + 32);
+                tempRounded = df.format(tmp);
+            }else{
+                float tmp = Float.valueOf(tempRounded);
+                tempRounded = df.format(tmp);
             }
 
+            System.out.println("-------------"+tempRounded+"-------------");
 
-/*            icon.setImageDrawable(LoadImageFromWebOperations(iconUrl));*/
-            tempBarInfo.setText(main);
-            mainTemper.setText(tempRounded + " \u00B0" + "C");
+
+            /*            icon.setImageDrawable(LoadImageFromWebOperations(iconUrl));*/
+            tempBarInfo.setText(city_name);
+            if(pref == true){
+                mainTemper.setText(tempRounded + " \u00B0" + "F");
+            }else{
+                mainTemper.setText(tempRounded + " \u00B0" + "C");
+            }
             result.setText(resultText);
 
             Bitmap bitmap = Bitmap.createBitmap(
