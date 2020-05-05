@@ -25,16 +25,21 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
+
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.DAY_OF_WEEK;
 
 
 public class SecondActivity extends AppCompatActivity {
 
     private Object ImageView;
 
-    TextView cityName;
     Button searchButton;
-    TextView result, mainTemper, tempBarInfo;
+    TextView result, mainTemper, tempBarInfo, cityName, date;
     ImageView icon;
 
 
@@ -89,8 +94,12 @@ public class SecondActivity extends AppCompatActivity {
         tempBarInfo = findViewById(R.id.tempBarInfo);
         mainTemper = findViewById(R.id.mainTemper);
         icon = findViewById(R.id.icon);
+        date = findViewById(R.id.date);
 
         String cName = cityName.getText().toString();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMMM HH:mm");
+        String currentDate = sdf.format(new Date());
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         Boolean pref = sharedPreferences.getBoolean("Unit", false);
@@ -169,6 +178,7 @@ public class SecondActivity extends AppCompatActivity {
 
             /*            icon.setImageDrawable(LoadImageFromWebOperations(iconUrl));*/
             tempBarInfo.setText(city_name);
+            date.setText(currentDate);
             if(pref == true){
                 mainTemper.setText(tempRounded + " \u00B0" + "F");
             }else{

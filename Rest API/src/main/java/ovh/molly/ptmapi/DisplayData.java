@@ -2,19 +2,19 @@ package ovh.molly.ptmapi;
 
 public class DisplayData {
 
-    private String informationString;
+    private String info;
 
     public DisplayData(){}
 
-    public DisplayData(String informationString) {
-        this.informationString = informationString;
+    public DisplayData(String info) {
+        this.info = info;
     }
 
     public String getInformationString() {
-        return informationString;
+        return info;
     }
 
-    public void setInformationString(String informationString) {
-        this.informationString = informationString;
+    public void setInformationString(String info) {
+        this.info = info;
     }
 }

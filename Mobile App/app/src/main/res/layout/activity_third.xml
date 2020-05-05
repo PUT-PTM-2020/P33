@@ -15,12 +15,12 @@
         android:layout_width="29dp"
         android:layout_height="30dp"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/humidity"
         app:layout_constraintEnd_toStartOf="@+id/result"
-        app:layout_constraintHorizontal_bias="0.16"
+        app:layout_constraintHorizontal_bias="0.178"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.62"
+        app:layout_constraintTop_toBottomOf="@+id/teemperature"
+        app:layout_constraintVertical_bias="0.482"
         app:srcCompat="@drawable/pressure" />
 
     <ImageView
@@ -30,17 +30,17 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/result"
-        app:layout_constraintHorizontal_bias="0.16"
+        app:layout_constraintHorizontal_bias="0.178"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.526"
+        app:layout_constraintVertical_bias="0.542"
         app:srcCompat="@drawable/temperature" />
 
     <Button
         android:id="@+id/getData"
         android:layout_width="111dp"
         android:layout_height="51dp"
-        android:layout_marginTop="184dp"
+        android:layout_marginTop="228dp"
         android:background="@drawable/rounded_button"
         android:fontFamily="@font/montserrat_medium"
         android:onClick="getStmData"
@@ -67,19 +67,67 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/getData"
-        app:layout_constraintVertical_bias="0.336" />
+        app:layout_constraintVertical_bias="0.226" />
 
     <ImageView
         android:id="@+id/humidity"
         android:layout_width="29dp"
         android:layout_height="30dp"
+        android:layout_marginBottom="176dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/result"
-        app:layout_constraintHorizontal_bias="0.16"
+        app:layout_constraintHorizontal_bias="0.178"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/humidity" />
+
+    <Button
+        android:id="@+id/syn"
+        android:layout_width="37dp"
+        android:layout_height="33dp"
+        android:background="@drawable/refresh"
+        android:onClick="syncWithDisplay"
+        app:layout_constraintBottom_toTopOf="@+id/getData"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/syncInfo"
+        app:layout_constraintVertical_bias="0.2" />
+
+    <TextView
+        android:id="@+id/syncInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="96dp"
+        android:fontFamily="@font/montserrat_light"
+        android:text="Click bellow to sync with STM display"
+        android:textColor="@android:color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/connect"
+        android:layout_width="59dp"
+        android:layout_height="49dp"
+        android:background="@drawable/connect"
+        android:onClick="connect"
+        app:layout_constraintBottom_toTopOf="@+id/syncInfo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.955"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.714"
-        app:srcCompat="@drawable/humidity" />
+        app:layout_constraintVertical_bias="0.159" />
+
+    <TextView
+        android:id="@+id/connectStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="disconnected"
+        app:layout_constraintBottom_toTopOf="@+id/syncInfo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.954"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/connect"
+        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

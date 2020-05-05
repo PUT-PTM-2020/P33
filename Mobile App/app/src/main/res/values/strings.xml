@@ -14,6 +14,9 @@
     <!-- Preference Titles -->
     <string name="unit_header">Unit</string>
     <string name="display_header">Display</string>
+    <string name="localization_header">Localization</string>
+    <string name="connect_header">Connect</string>
+
 
     <!-- Unit Preferences -->
     <string name="unit_title">Choose unit</string>
@@ -24,4 +27,10 @@
     <string name="display_title">Display on STM</string>
     <string name="display_summary_on">STM data</string>
     <string name="display_summary_off">Web data</string>
+
+    <!-- Connect Preferences -->
+    <string name="connect_title">Connection</string>
+    <string name="connect_summary_on">Connect</string>
+    <string name="connect_summary_off">Disconnect</string>
+
 </resources>
