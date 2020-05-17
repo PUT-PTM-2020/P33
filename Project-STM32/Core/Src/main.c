@@ -43,7 +43,10 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-UART_HandleTypeDef huart1;
+TIM_HandleTypeDef htim4;
+
+USART_HandleTypeDef husart2;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -53,7 +56,7 @@ BMP280_HandleTypedef bmp280;
 float pressure, temperature, humidity;
 
 uint16_t size;
-uint8_t Data[256];
+uint8_t Data[256] = {0};
 
 /* USER CODE END PV */
 
@@ -61,7 +64,9 @@ uint8_t Data[256];
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
-static void MX_USART1_UART_Init(void);
+static void MX_USART2_Init(void);
+static void MX_TIM4_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
@@ -101,7 +106,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
-  MX_USART1_UART_Init();
+  MX_USART2_Init();
+  MX_TIM4_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
 	bmp280_init_default_params(&bmp280.params);
@@ -109,13 +116,14 @@ int main(void)
 	bmp280.i2c = &hi2c1;
 
 	while (!bmp280_init(&bmp280, &bmp280.params)) {
-		size = sprintf((char *)Data, "BMP280 initialization failed\n");
-		HAL_UART_Transmit(&huart1, Data, size, 1000);
+		size = sprintf((char *)Data, "BMP280 initialization failed\n\r");
+		HAL_UART_Transmit_IT(&huart3, Data, size);
 		HAL_Delay(2000);
 	}
 	bool bme280p = bmp280.id == BME280_CHIP_ID;
-	size = sprintf((char *)Data, "BMP280: found %s\n", bme280p ? "BME280" : "BMP280");
-	HAL_UART_Transmit(&huart1, Data, size, 1000);
+	size = sprintf((char *)Data, "BMP280: found %s\n\r", bme280p ? "BME280" : "BMP280");
+	HAL_UART_Transmit_IT(&huart3, Data, size);
+
 
   /* USER CODE END 2 */
 
@@ -129,22 +137,25 @@ int main(void)
 		HAL_Delay(100);
 		while (!bmp280_read_float(&bmp280, &temperature, &pressure, &humidity)) {
 			size = sprintf((char *)Data,
-					"Temperature/pressure reading failed\n");
-			HAL_UART_Transmit(&huart1, Data, size, 1000);
+					"Temperature/pressure reading failed\n\r");
+			HAL_UART_Transmit_IT(&huart3, Data, size);
 			HAL_Delay(2000);
 		}
 
-		size = sprintf((char *)Data,"Pressure: %.2f Pa, Temperature: %.2f C",
-				pressure, temperature);
-		HAL_UART_Transmit(&huart1, Data, size, 1000);
+		size = sprintf((char *)Data,"Temperature: %.2f C \n\r",temperature);
+		HAL_UART_Transmit_IT(&huart3, Data, size);
+		HAL_Delay(1000);
+		size = sprintf((char *)Data,"Pressure: %.2f Pa \n\r",pressure);
+				HAL_UART_Transmit_IT(&huart3, Data, size);
+		HAL_Delay(1000);
 		if (bme280p) {
-			size = sprintf((char *)Data,", Humidity: %.2f\n", humidity);
-			HAL_UART_Transmit(&huart1, Data, size, 1000);
+			size = sprintf((char *)Data,"Humidity: %.2f\n\r\n\r", humidity);
+			HAL_UART_Transmit_IT(&huart3, Data, size);
 		}
 
 		else {
-			size = sprintf((char *)Data, "\n");
-			HAL_UART_Transmit(&huart1, Data, size, 1000);
+			size = sprintf((char *)Data, "\n\r");
+			HAL_UART_Transmit_IT(&huart3, Data, size);
 		}
 		HAL_Delay(2000);
 	}
@@ -229,35 +240,114 @@ static void MX_I2C1_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
+  * @brief TIM4 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART1_UART_Init(void)
+static void MX_TIM4_Init(void)
 {
 
-  /* USER CODE BEGIN USART1_Init 0 */
+  /* USER CODE BEGIN TIM4_Init 0 */
 
-  /* USER CODE END USART1_Init 0 */
+  /* USER CODE END TIM4_Init 0 */
 
-  /* USER CODE BEGIN USART1_Init 1 */
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 810;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 10;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART1_Init 2 */
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
 
-  /* USER CODE END USART1_Init 2 */
+  /* USER CODE END TIM4_Init 2 */
+
+}
+
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  husart2.Instance = USART2;
+  husart2.Init.BaudRate = 115200;
+  husart2.Init.WordLength = USART_WORDLENGTH_8B;
+  husart2.Init.StopBits = USART_STOPBITS_1;
+  husart2.Init.Parity = USART_PARITY_NONE;
+  husart2.Init.Mode = USART_MODE_TX_RX;
+  husart2.Init.CLKPolarity = USART_POLARITY_LOW;
+  husart2.Init.CLKPhase = USART_PHASE_1EDGE;
+  husart2.Init.CLKLastBit = USART_LASTBIT_DISABLE;
+  if (HAL_USART_Init(&husart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 112600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
 
 }
 
@@ -271,19 +361,28 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, LD3_Pin|LD5_Pin|LD6_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : LD3_Pin LD5_Pin LD6_Pin */
-  GPIO_InitStruct.Pin = LD3_Pin|LD5_Pin|LD6_Pin;
+  /*Configure GPIO pin : LD3_Pin */
+  GPIO_InitStruct.Pin = LD3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(LD3_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA9 PA10 */
+  GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
