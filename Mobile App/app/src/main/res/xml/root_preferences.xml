@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
     <PreferenceCategory app:title="messages_header">
@@ -60,15 +61,32 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="WiFi Connection">
+
+        <EditTextPreference
+            app:key="ssid_key"
+            app:title="@string/ssid_title"
+            app:defaultValue="SSID"
+            app:summary=""
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="password_key"
+            app:title="@string/password_title"
+            app:summary="***********" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory
             app:key="help_category"
             app:title="Help">
 
             <Preference
                 app:key="feedback"
-                app:summary="Report technical issues or suggest new features"
-                app:title="Send feedback"/>
+                app:summary="weatherx@private.com"
+                app:title="Report technical issues or suggestions on e-mail"/>
 
     </PreferenceCategory>
+
 
     </PreferenceScreen>

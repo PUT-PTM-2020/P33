@@ -16,7 +16,7 @@
     <string name="display_header">Display</string>
     <string name="localization_header">Localization</string>
     <string name="connect_header">Connect</string>
-
+    <string name="wifi_header">STM WiFi Connection</string>
 
     <!-- Unit Preferences -->
     <string name="unit_title">Choose unit</string>
@@ -32,5 +32,12 @@
     <string name="connect_title">Connection</string>
     <string name="connect_summary_on">Connect</string>
     <string name="connect_summary_off">Disconnect</string>
+
+    <!-- Connection status -->
+    <string name="try_again">Reconnect</string>
+
+    <!-- Connect STM -->
+    <string name="password_title">Password</string>
+    <string name="ssid_title">SSID</string>
 
 </resources>
