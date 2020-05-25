@@ -57,8 +57,10 @@ float pressure, temperature, humidity;
 
 uint16_t size;
 uint8_t Data[256] = {0};
-uint16_t size_r = 100;
+uint16_t size_r = 1;
 uint8_t Data_r[256] = {0};
+uint16_t i = 0;
+char Data_rx[1] = {0};
 
 /* USER CODE END PV */
 
@@ -78,18 +80,20 @@ static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef*huart){
 	if(huart->Instance == USART2){
-		HAL_UART_Transmit_IT(&huart3, Data_r, size_r);
-		size = sprintf((char*)Data, "Hallo\r\n");
-				HAL_UART_Transmit_IT(&huart3, Data, size);
-		HAL_TIM_Base_Start_IT(&htim4);
+		Data_r[i] = Data_rx[0];
+		i++;
+		//HAL_UART_Transmit_IT(&huart3, Data_r, size_r);
+		//size = sprintf((char*)Data, "Hallo\r\n");
+		//HAL_UART_Transmit_IT(&huart2, Data, size);
+		HAL_UART_Receive_IT(&huart2, Data_rx, size_r);
 	}
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if(htim->Instance == TIM4) {
-		size = sprintf((char*)Data, "AT\r\n");
+		/*size = sprintf(Data, "AT\r\n");
 		HAL_UART_Transmit_IT(&huart2, Data, size);
-		HAL_TIM_Base_Stop(&htim4);
+		HAL_TIM_Base_Stop(&htim4);*/
 		HAL_UART_Receive_IT(&huart2, Data_r, size_r);
 	}
 }
@@ -141,7 +145,8 @@ int main(void)
 	bool bme280p = bmp280.id == BME280_CHIP_ID;
 	size = sprintf((char *)Data, "BMP280: found %s\n\r", bme280p ? "BME280" : "BMP280");*/
 	//HAL_UART_Transmit_IT(&huart2, Data, size);
-	HAL_TIM_Base_Start_IT(&htim4);
+	//HAL_TIM_Base_Start_IT(&htim4);
+	HAL_UART_Receive_IT(&huart2, Data_rx, size_r);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -158,7 +163,6 @@ int main(void)
 			HAL_UART_Transmit_IT(&huart3, Data, size);
 			HAL_Delay(2000);
 		}
-
 		size = sprintf((char *)Data,"Temperature: %.2f C \n\r",temperature);
 		HAL_UART_Transmit_IT(&huart3, Data, size);
 		HAL_Delay(1000);
@@ -169,12 +173,28 @@ int main(void)
 			size = sprintf((char *)Data,"Humidity: %.2f\n\r\n\r", humidity);
 			HAL_UART_Transmit_IT(&huart3, Data, size);
 		}
-
 		else {
 			size = sprintf((char *)Data, "\n\r");
 			HAL_UART_Transmit_IT(&huart3, Data, size);
 		}
 		HAL_Delay(2000);*/
+
+		HAL_Delay(2000);
+		size = sprintf(Data, "AT\r\n");
+		HAL_UART_Transmit_IT(&huart2, Data, size);
+		HAL_Delay(3000);
+		size = sprintf(Data, Data_r);
+		HAL_UART_Transmit_IT(&huart3, Data, size);
+		i = 0;
+		for(int k = 0; k < 256; k++) Data_r[k] = 0;
+		HAL_Delay(2000);
+				size = sprintf(Data, "AT+CWJAP?\r\n");
+				HAL_UART_Transmit_IT(&huart2, Data, size);
+				HAL_Delay(3000);
+				size = sprintf(Data, Data_r);
+				HAL_UART_Transmit_IT(&huart3, Data, size);
+				i = 0;
+				for(int k = 0; k < 256; k++) Data_r[k] = 0;
 	}
   /* USER CODE END 3 */
 }
@@ -427,5 +447,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
