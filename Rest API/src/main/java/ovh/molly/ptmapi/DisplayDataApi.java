@@ -18,6 +18,7 @@ public class DisplayDataApi {
     }
 
     @GetMapping("/Display/getDisplayData")
+   // @ResponseStatus(value = HttpStatus.OK, reason = "OK")
     public List<DisplayData> getDisplayData(){
         return displayDataManager.getDisplayDataList();
     }

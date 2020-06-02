@@ -19,11 +19,12 @@ public class PhoneDataApi {
     }
 
     @GetMapping("/Phone/getPhoneData")
+    //@ResponseStatus(value = HttpStatus.OK, reason = "OK")
     public List<PhoneData> getPhoneData(){
         return phoneDataManager.getPhoneDataList();
     }
 
-    @PostMapping("/Phone/addPhoneData")
+    @PostMapping("/Phone/postPhoneData")
     @ResponseStatus(value = HttpStatus.CREATED, reason = "Todo created!")
     public boolean addPhoneData(@RequestBody PhoneData phoneData){
         this.phoneDataId++;

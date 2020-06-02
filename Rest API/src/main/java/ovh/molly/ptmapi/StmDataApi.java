@@ -19,11 +19,12 @@ public class StmDataApi {
     }
 
     @GetMapping("/STM/getStmData")
+    //@ResponseStatus(value = HttpStatus.OK, reason = "OK")
     public List<StmData> getStmData(){
         return stmDataManager.getStmDataList();
     }
 
-    @PostMapping("/STM/addStmData")
+    @PostMapping("/STM/postStmData")
     @ResponseStatus(value = HttpStatus.CREATED, reason = "Todo created!")
     public boolean addStmData(@RequestBody StmData stmData){
         this.stmDataId++;

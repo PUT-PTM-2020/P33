@@ -233,24 +233,25 @@ public class ThirdActivity extends AppCompatActivity {
         protected Boolean doInBackground(String... address) {
 
             boolean isConnection = networkTest();
-            //System.out.println(co + "---------------------------networktest");
+            System.out.println( isConnection + "---------------------------networktest");
+
             if (isConnection == true) {
                 //System.out.println(address[0]);
                 try{
                     URL myUrl = new URL(address[0]);
-                    HttpsURLConnection connection = (HttpsURLConnection) myUrl.openConnection();
+                    HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
                     connection.connect();
                     // System.out.println(address[0]);
-                    // System.out.println(connection.getResponseCode()+"test");
+                    System.out.println(connection.getResponseCode()+"test 88888888888888888888");
 
                     if(connection.getResponseCode() == HttpURLConnection.HTTP_OK)
                     {
-                        //System.out.println("========================TAK============");
+                        System.out.println("========================TAK============");
                         connection.disconnect();
                         return true;
                     }
                     else{
-                        //System.out.println("========================NIE============");
+                        System.out.println("========================NIE============");
                         showToast();
                         connection.disconnect();
                         return false;
@@ -465,7 +466,8 @@ public class ThirdActivity extends AppCompatActivity {
 
         ConnectionTest connectionTest = new ConnectionTest();
         Boolean conTestResult = connectionTest.execute("http://192.168.0.105:8080/STM/getStmData").get();
-        connectionTest.cancel(false);
+        connectionTest.cancel(true);
+        System.out.println(conTestResult);
 
         STMDataGet weather = new STMDataGet();
 
@@ -573,13 +575,14 @@ public class ThirdActivity extends AppCompatActivity {
             if(connManager != null){
                 networkInfo = connManager.getActiveNetworkInfo();
             }
+            System.out.println("========================Tak============Z funkcji test");
             return  networkInfo != null && networkInfo.isConnected();
 
         } catch (NullPointerException e) {
-            //System.out.println("========================NIE============Z funkcji test");
+            System.out.println("========================NIE============Z funkcji test");
             return  false;
         }
-        //System.out.println("========================NIE============");
+
     }
 
     public void showToast(){
@@ -812,8 +815,8 @@ public class ThirdActivity extends AppCompatActivity {
         this.cityName = loc;
 
         ConnectionTest connectionTest = new ConnectionTest();
-        Boolean conTestResult = connectionTest.execute(projectApiAddr).get();
-        connectionTest.cancel(false);
+        Boolean conTestResult = connectionTest.execute("http://192.168.0.105:8080/STM/getStmData").get();
+        connectionTest.cancel(true);
 
         if(conTestResult == true){
             if(pref == false){

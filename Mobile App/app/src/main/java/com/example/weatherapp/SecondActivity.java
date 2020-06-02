@@ -218,9 +218,9 @@ public class SecondActivity extends AppCompatActivity {
 
                 Picasso.get().load(iconUrl).error(R.drawable.ic_launcher_background).into(icon);
 
-                String resultText = "Main :                  " + main +
-                        "\nPressure :           " + pressure + " hPa" +
-                        "\nHumidity :          " + humidity + " %";
+                String resultText = "Main :                 " + main +
+                        "\nPressure :          " + pressure + " hPa" +
+                        "\nHumidity :        " + humidity + " %";
 
                 //System.out.println("-------------"+pref+"-------------");
 
