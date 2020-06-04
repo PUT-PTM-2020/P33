@@ -20,6 +20,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdio.h>
+#include <string.h>
+//#include ".h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -56,9 +59,9 @@ BMP280_HandleTypedef bmp280;
 float pressure, temperature, humidity;
 
 uint16_t size;
-uint8_t Data[256] = {0};
+uint8_t Data[512] = {0};
 uint16_t size_r = 1;
-uint8_t Data_r[256] = {0};
+uint8_t Data_r[512] = {0};
 uint16_t i = 0;
 char Data_rx[1] = {0};
 
@@ -82,20 +85,124 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef*huart){
 	if(huart->Instance == USART2){
 		Data_r[i] = Data_rx[0];
 		i++;
-		//HAL_UART_Transmit_IT(&huart3, Data_r, size_r);
-		//size = sprintf((char*)Data, "Hallo\r\n");
-		//HAL_UART_Transmit_IT(&huart2, Data, size);
 		HAL_UART_Receive_IT(&huart2, Data_rx, size_r);
 	}
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	if(htim->Instance == TIM4) {
-		/*size = sprintf(Data, "AT\r\n");
+void ESP_Init(){
+
+	size = sprintf(Data, "AT\r\n");
 		HAL_UART_Transmit_IT(&huart2, Data, size);
-		HAL_TIM_Base_Stop(&htim4);*/
-		HAL_UART_Receive_IT(&huart2, Data_r, size_r);
-	}
+		HAL_Delay(500);
+		size = sprintf(Data, Data_r);
+		HAL_UART_Transmit_IT(&huart3, Data, size);
+		i = 0;
+		for(int k = 0; k < 256; k++) Data_r[k] = 0;
+		HAL_Delay(500);
+
+		size = sprintf(Data, "AT+CWMODE?\r\n");
+		HAL_UART_Transmit_IT(&huart2, Data, size);
+		HAL_Delay(500);
+		size = sprintf(Data, Data_r);
+		HAL_UART_Transmit_IT(&huart3, Data, size);
+		i = 0;
+		for(int k = 0; k < 256; k++) Data_r[k] = 0;
+		HAL_Delay(500);
+
+		size = sprintf(Data, "AT+CWJAP?\r\n");
+		HAL_UART_Transmit_IT(&huart2, Data, size);
+		HAL_Delay(500);
+		size = sprintf(Data, Data_r);
+		HAL_UART_Transmit_IT(&huart3, Data, size);
+		i = 0;
+		for(int k = 0; k < 256; k++) Data_r[k] = 0;
+		HAL_Delay(500);
+
+		size = sprintf(Data, "AT+CWSAP_CUR=\"STM\",\"testtymczasowy\",1,4\r\n");
+			HAL_UART_Transmit_IT(&huart2, Data, size);
+			HAL_Delay(500);
+			size = sprintf(Data, Data_r);
+			HAL_UART_Transmit_IT(&huart3, Data, size);
+			i = 0;
+			for(int k = 0; k < 256; k++) Data_r[k] = 0;
+			HAL_Delay(500);
+
+		size = sprintf(Data, "AT+CIPMODE=0\r\n");
+			HAL_UART_Transmit_IT(&huart2, Data, size);
+			HAL_Delay(500);
+			size = sprintf(Data, Data_r);
+			HAL_UART_Transmit_IT(&huart3, Data, size);
+			i = 0;
+			for(int k = 0; k < 256; k++) Data_r[k] = 0;
+			HAL_Delay(500);
+
+			size = sprintf(Data, "AT+CIPMUX=1\r\n");
+				HAL_UART_Transmit_IT(&huart2, Data, size);
+				HAL_Delay(500);
+				size = sprintf(Data, Data_r);
+				HAL_UART_Transmit_IT(&huart3, Data, size);
+				i = 0;
+				for(int k = 0; k < 256; k++) Data_r[k] = 0;
+				HAL_Delay(500);
+
+			size = sprintf(Data, "AT+CIPSERVER=1,8080\r\n");
+				HAL_UART_Transmit_IT(&huart2, Data, size);
+				HAL_Delay(500);
+				size = sprintf(Data, Data_r);
+				HAL_UART_Transmit_IT(&huart3, Data, size);
+				i = 0;
+				for(int k = 0; k < 256; k++) Data_r[k] = 0;
+				HAL_Delay(500);
+}
+
+void ESP_SendData()
+{
+	bmp280_read_float(&bmp280, &temperature, &pressure, &humidity);
+
+	size = sprintf(Data, "AT+CIPSTART=0,\"TCP\",\"164.132.104.58\",8080\r\n");
+				HAL_UART_Transmit_IT(&huart2, Data, size);
+				HAL_Delay(500);
+				size = sprintf(Data, Data_r);
+				HAL_UART_Transmit_IT(&huart3, Data, size);
+				i = 0;
+				for(int k = 0; k < 256; k++) Data_r[k] = 0;
+				HAL_Delay(500);
+
+				char aszJsonData[150] = {0};
+				sprintf(aszJsonData,"{\"temperature\":\"%.2f\",\"pressure\":\"%.2f\",\"humidity\":\"%.2f\"}",temperature,pressure,humidity);
+				char aszJsonRequest[250] = { 0 };
+				char aszServiceMethod[] = "/STM/postStmData";
+				char aszRequest[150] = { 0 };
+				char aszHostIp[30] = "164.132.104.58";
+				char aszPort[] = "8080";
+				uint16_t size_temp = 0;
+				sprintf(aszRequest,"http://%s:%s%s HTTP/1.1",aszHostIp,aszPort,aszServiceMethod);
+				strcat(aszHostIp, ":");
+				strcat(aszHostIp, aszPort);
+				size_temp = sprintf(aszJsonRequest, "POST %s\r\nHost: %s\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s\r\n",
+						aszRequest, aszHostIp, strlen(aszJsonData), aszJsonData);
+
+	size = sprintf(Data, "AT+CIPSEND=0,%d\r\n",size_temp);
+				HAL_UART_Transmit_IT(&huart2, Data, size);
+				HAL_Delay(200);
+
+				HAL_UART_Transmit_IT(&huart2, aszJsonRequest, size_temp);
+				HAL_Delay(300);
+
+				size = sprintf(Data, Data_r);
+				HAL_UART_Transmit_IT(&huart3, Data, size);
+				i = 0;
+				for(int k = 0; k < 256; k++) Data_r[k] = 0;
+				HAL_Delay(500);
+
+	size = sprintf(Data, "AT+CIPCLOSE=0\r\n");
+				HAL_UART_Transmit_IT(&huart2, Data, size);
+				HAL_Delay(500);
+				size = sprintf(Data, Data_r);
+				HAL_UART_Transmit_IT(&huart3, Data, size);
+				i = 0;
+				for(int k = 0; k < 256; k++) Data_r[k] = 0;
+				HAL_Delay(500);
 }
 /* USER CODE END 0 */
 
@@ -137,20 +244,20 @@ int main(void)
 	bmp280.addr = BMP280_I2C_ADDRESS_0;
 	bmp280.i2c = &hi2c1;
 
-	/*while (!bmp280_init(&bmp280, &bmp280.params)) {
+	while (!bmp280_init(&bmp280, &bmp280.params)) {
 		size = sprintf((char *)Data, "BMP280 initialization failed\n\r");
 		HAL_UART_Transmit_IT(&huart3, Data, size);
 		HAL_Delay(2000);
 	}
 	bool bme280p = bmp280.id == BME280_CHIP_ID;
-	size = sprintf((char *)Data, "BMP280: found %s\n\r", bme280p ? "BME280" : "BMP280");*/
-	//HAL_UART_Transmit_IT(&huart2, Data, size);
-	//HAL_TIM_Base_Start_IT(&htim4);
+	size = sprintf((char *)Data, "BMP280: found %s\n\r", bme280p ? "BME280" : "BMP280");
 	HAL_UART_Receive_IT(&huart2, Data_rx, size_r);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	ESP_Init();
+
 	while (1) {
 
     /* USER CODE END WHILE */
@@ -176,25 +283,11 @@ int main(void)
 		else {
 			size = sprintf((char *)Data, "\n\r");
 			HAL_UART_Transmit_IT(&huart3, Data, size);
-		}
-		HAL_Delay(2000);*/
+		}*/
+		ESP_SendData();
+		HAL_Delay(2000);
 
-		HAL_Delay(2000);
-		size = sprintf(Data, "AT\r\n");
-		HAL_UART_Transmit_IT(&huart2, Data, size);
-		HAL_Delay(3000);
-		size = sprintf(Data, Data_r);
-		HAL_UART_Transmit_IT(&huart3, Data, size);
-		i = 0;
-		for(int k = 0; k < 256; k++) Data_r[k] = 0;
-		HAL_Delay(2000);
-				size = sprintf(Data, "AT+CWJAP?\r\n");
-				HAL_UART_Transmit_IT(&huart2, Data, size);
-				HAL_Delay(3000);
-				size = sprintf(Data, Data_r);
-				HAL_UART_Transmit_IT(&huart3, Data, size);
-				i = 0;
-				for(int k = 0; k < 256; k++) Data_r[k] = 0;
+
 	}
   /* USER CODE END 3 */
 }
