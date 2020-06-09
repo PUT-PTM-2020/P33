@@ -159,6 +159,16 @@ void ESP_SendData()
 {
 	bmp280_read_float(&bmp280, &temperature, &pressure, &humidity);
 
+			size = sprintf((char *)Data,"Temperature: %.2f C \n\r",temperature);
+						HAL_UART_Transmit_IT(&huart3, Data, size);
+						HAL_Delay(10);
+			size = sprintf((char *)Data,"Pressure: %.2f Pa \n\r",pressure);
+						HAL_UART_Transmit_IT(&huart3, Data, size);
+						HAL_Delay(10);
+			size = sprintf((char *)Data,"Humidity: %.2f\n\r\n\r", humidity);
+						HAL_UART_Transmit_IT(&huart3, Data, size);
+						HAL_Delay(10);
+
 	size = sprintf(Data, "AT+CIPSTART=0,\"TCP\",\"164.132.104.58\",8080\r\n");
 				HAL_UART_Transmit_IT(&huart2, Data, size);
 				HAL_Delay(500);
@@ -171,7 +181,7 @@ void ESP_SendData()
 				char aszJsonData[150] = {0};
 				sprintf(aszJsonData,"{\"temperature\":\"%.2f\",\"pressure\":\"%.2f\",\"humidity\":\"%.2f\"}",temperature,pressure,humidity);
 				char aszJsonRequest[250] = { 0 };
-				char aszServiceMethod[] = "/STM/postStmData";
+				char aszServiceMethod[] = "/STM/putStmData";
 				char aszRequest[150] = { 0 };
 				char aszHostIp[30] = "164.132.104.58";
 				char aszPort[] = "8080";
@@ -179,7 +189,7 @@ void ESP_SendData()
 				sprintf(aszRequest,"http://%s:%s%s HTTP/1.1",aszHostIp,aszPort,aszServiceMethod);
 				strcat(aszHostIp, ":");
 				strcat(aszHostIp, aszPort);
-				size_temp = sprintf(aszJsonRequest, "POST %s\r\nHost: %s\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s\r\n",
+				size_temp = sprintf(aszJsonRequest, "PUT %s\r\nHost: %s\r\nContent-Type: application/json\r\nContent-Length: %d\r\n\r\n%s\r\n",
 						aszRequest, aszHostIp, strlen(aszJsonData), aszJsonData);
 
 	size = sprintf(Data, "AT+CIPSEND=0,%d\r\n",size_temp);

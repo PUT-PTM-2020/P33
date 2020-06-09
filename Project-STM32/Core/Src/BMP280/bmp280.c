@@ -270,7 +270,7 @@ static inline uint32_t compensate_pressure(BMP280_HandleTypedef *dev, int32_t ad
 	var2 = ((int64_t) dev->dig_P8 * p) >> 19;
 
 	p = ((p + var1 + var2) >> 8) + ((int64_t) dev->dig_P7 << 4);
-	return p;
+	return p/100;
 }
 
 /**
