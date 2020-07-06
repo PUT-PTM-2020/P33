@@ -78,15 +78,24 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-            app:key="help_category"
-            app:title="Help">
+        app:key="about_key"
+        app:title="About">
 
-            <Preference
-                app:key="feedback"
-                app:summary="weatherx@private.com"
-                app:title="Report technical issues or suggestions on e-mail"/>
+        <Preference
+            app:summary="1.0"
+            app:title="Version"/>
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        app:key="help_category"
+        app:title="Help">
+
+        <Preference
+            app:key="feedback"
+            app:summary="weatherx@private.com"
+            app:title="Report technical issues or suggestions on e-mail"/>
+
+    </PreferenceCategory>
 
     </PreferenceScreen>

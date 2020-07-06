@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,7 +12,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -28,20 +26,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.sql.SQLOutput;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
@@ -53,7 +46,7 @@ public class SecondActivity extends AppCompatActivity {
     private Object ImageView;
 
     Button searchButton;
-    TextView result, mainTemper, tempBarInfo, cityName, date;
+    TextView result1, result2, result3, mainTemper, tempBarInfo, cityName, date;
     ImageView icon;
     boolean connectionState = false;
     String addr ="";
@@ -144,7 +137,9 @@ public class SecondActivity extends AppCompatActivity {
     public void search(View view) throws ExecutionException, InterruptedException {
         cityName = findViewById(R.id.cityName);
         searchButton = findViewById(R.id.searchButton);
-        result = findViewById(R.id.result);
+        result1 = findViewById(R.id.result1);
+        result2 = findViewById(R.id.result);
+        result3 = findViewById(R.id.result4);
         tempBarInfo = findViewById(R.id.tempBarInfo);
         mainTemper = findViewById(R.id.mainTemper);
         icon = findViewById(R.id.icon);
@@ -218,9 +213,9 @@ public class SecondActivity extends AppCompatActivity {
 
                 Picasso.get().load(iconUrl).error(R.drawable.ic_launcher_background).into(icon);
 
-                String resultText = "Main :                 " + main +
-                        "\nPressure :          " + pressure + " hPa" +
-                        "\nHumidity :        " + humidity + " %";
+                String resultText1 = "Main : " + main;
+                String resultText2 = "Pressure : " + pressure + " hPa";
+                String resultText3 = "Humidity : " + humidity + " %";
 
                 //System.out.println("-------------"+pref+"-------------");
 
@@ -251,7 +246,16 @@ public class SecondActivity extends AppCompatActivity {
                 }else{
                     mainTemper.setText(tempRounded + " \u00B0" + "C");
                 }
-                result.setText(resultText);
+                result1.setText(resultText1);
+                result2.setText(resultText2);
+                result3.setText(resultText3);
+
+                ImageView img1=(ImageView)findViewById(R.id.info);
+                img1.setVisibility(View.VISIBLE);
+                ImageView img2=(ImageView)findViewById(R.id.info2);
+                img2.setVisibility(View.VISIBLE);
+                ImageView img3=(ImageView)findViewById(R.id.info3);
+                img3.setVisibility(View.VISIBLE);
 
                 Bitmap bitmap = Bitmap.createBitmap(
                         500, // Width

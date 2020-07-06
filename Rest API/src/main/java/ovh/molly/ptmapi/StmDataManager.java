@@ -25,4 +25,9 @@ public class StmDataManager {
     public void setStmDataList(List<StmData> stmDataList){
         this.stmDataList = stmDataList;
     }
+
+    public  boolean putStmData(StmData stmData){
+        stmDataList.clear();
+        return stmDataList.add(stmData);
+    }
 }

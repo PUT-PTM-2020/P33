@@ -25,20 +25,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -55,13 +50,13 @@ public class ThirdActivity extends AppCompatActivity {
     private Object ImageView;
 
     String webApiAddr = "https://openweathermap.org/data/2.5/weather?q=poznan&appid=439d4b804bc8187953eb36d2a8c26a02";
-    String projectApiAddr = "http://192.168.0.105:8080/Display/putDisplayData";
+    String projectApiAddr = "http://164.132.104.58:8080";
     String cityName = "";
 
     Boolean valid = false;
 
     Button getData, syn, connect;
-    TextView result, connectStatus;
+    TextView result1, result2, result3, connectStatus;
 
     public void syncWithDisplay(View view) throws ExecutionException, InterruptedException {
         syn = findViewById(R.id.syn);
@@ -85,7 +80,7 @@ public class ThirdActivity extends AppCompatActivity {
             String ssid = preferences.getString("ssid_key", "Default");
 
            UDPsend udPsend = new UDPsend();
-           udPsend.execute(pass + "" + ssid);
+           udPsend.execute(pass + " " + ssid);
            //udPsend.cancel(true);
 
             System.out.println("Powinno wykonac");
@@ -233,25 +228,27 @@ public class ThirdActivity extends AppCompatActivity {
         protected Boolean doInBackground(String... address) {
 
             boolean isConnection = networkTest();
-            System.out.println( isConnection + "---------------------------networktest");
-
+            //System.out.println(co + "---------------------------networktest");
             if (isConnection == true) {
-                //System.out.println(address[0]);
+                System.out.println(address[0]);
+
                 try{
                     URL myUrl = new URL(address[0]);
                     HttpURLConnection connection = (HttpURLConnection) myUrl.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.setConnectTimeout(3000);
                     connection.connect();
                     // System.out.println(address[0]);
-                    System.out.println(connection.getResponseCode()+"test 88888888888888888888");
+                    System.out.println(connection.getResponseCode()+"test");
 
-                    if(connection.getResponseCode() == HttpURLConnection.HTTP_OK)
+                    if(connection.getResponseCode() == 200)
                     {
-                        System.out.println("========================TAK============");
+                        //System.out.println("========================TAK============");
                         connection.disconnect();
                         return true;
                     }
                     else{
-                        System.out.println("========================NIE============");
+                        //System.out.println("========================NIE============");
                         showToast();
                         connection.disconnect();
                         return false;
@@ -260,6 +257,7 @@ public class ThirdActivity extends AppCompatActivity {
 
                 } catch (Exception e) {
                     //System.out.println("========================NIE============");
+                    e.printStackTrace();
                     showToast();
 
                 }
@@ -360,7 +358,7 @@ public class ThirdActivity extends AppCompatActivity {
             String jsonData = params[0];
 
             try {
-                URL url = new URL(projectApiAddr);
+                URL url = new URL(projectApiAddr + "/Display/putDisplayData");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("PUT");
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -406,7 +404,7 @@ public class ThirdActivity extends AppCompatActivity {
             String jsonData = params[0];
 
             try {
-                URL url = new URL(projectApiAddr);
+                URL url = new URL(projectApiAddr+ "/Display/putDisplayData");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("PUT");
                 connection.setRequestProperty("Content-Type", "application/json");
@@ -449,15 +447,9 @@ public class ThirdActivity extends AppCompatActivity {
     public void getStmData(View view) throws ExecutionException, InterruptedException {
 
         getData = findViewById(R.id.getData);
-        result = findViewById(R.id.result);
-
-        //Showing parameteres images
-        ImageView img1=(ImageView)findViewById(R.id.humidity);
-        img1.setVisibility(View.VISIBLE);
-        ImageView img2=(ImageView)findViewById(R.id.pressure);
-        img2.setVisibility(View.VISIBLE);
-        ImageView img3=(ImageView)findViewById(R.id.teemperature);
-        img3.setVisibility(View.VISIBLE);
+        result1 = findViewById(R.id.result1);
+        result2 = findViewById(R.id.result2);
+        result3 = findViewById(R.id.result3);
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         Boolean pref = sharedPreferences.getBoolean("Unit", false);
@@ -465,7 +457,7 @@ public class ThirdActivity extends AppCompatActivity {
         String content;
 
         ConnectionTest connectionTest = new ConnectionTest();
-        Boolean conTestResult = connectionTest.execute("http://192.168.0.105:8080/STM/getStmData").get();
+        Boolean conTestResult = connectionTest.execute(projectApiAddr + "/STM/getStmData").get();
         connectionTest.cancel(true);
         System.out.println(conTestResult);
 
@@ -474,7 +466,8 @@ public class ThirdActivity extends AppCompatActivity {
         if(conTestResult == true){
             try {
 
-                content = weather.execute("http://192.168.0.105:8080/STM/getStmData").get();
+                content = weather.execute(projectApiAddr + "/STM/getStmData").get();
+                System.out.println("=================" + content);
                 Log.i("content", content);
 
                 //JSON
@@ -483,67 +476,84 @@ public class ThirdActivity extends AppCompatActivity {
                 //String mainTemperature = jsonObject.getString("main");
 //            Log.i("weatherData",weatherData);
 
-                JSONArray array = new JSONArray(content);
-
                 String temperature = "";
                 String pressure = "";
                 String humidity = "";
+                String resultText1 = "";
+                String resultText2 = "";
+                String resultText3 =  "";
 
+                if(content.equals("[]")){
+                    content = "[{\"id\":0,\"temperature\":\"no_data\",\"pressure\":\"no_data\",\"humidity\":\"no_data\"}]";
 
-                for(int i = 0; i < array.length(); i++){
-                    JSONObject weatherPart = array.getJSONObject(i);
-                    temperature = weatherPart.getString("temperature");
-                    pressure  = weatherPart.getString("pressure");
-                    humidity = weatherPart.getString("humidity");
+                    JSONArray array = new JSONArray(content);
 
-                }
+                    System.out.println("w ifie +++++++++++++++");
 
-                //JSONObject mainPart = new JSONObject(mainTemperature);
-                // temperature = jsonObject.getString("temperature");
-                // pressure = jsonObject.getString("pressure");
-                // humidity = jsonObject.getString("humidity");
-                // location = jsonObject.getString("location");
+                    for(int i = 0; i < array.length(); i++){
+                        JSONObject weatherPart = array.getJSONObject(i);
+                        temperature = weatherPart.getString("temperature");
+                        pressure  = weatherPart.getString("pressure");
+                        humidity = weatherPart.getString("humidity");
+                        weather.cancel(false);
+                    }
 
+                    resultText1 = "Temperature: " + temperature;
+                    resultText2 = "Pressure: " + pressure;
+                    resultText3 =  "Humidity: " + humidity;
 
-                Log.i("Temperature", temperature);
-                Log.i("Pressure", pressure);
-                Log.i("Humidity", humidity);
-
-                DecimalFormatSymbols sfs = new DecimalFormatSymbols();
-                sfs.setDecimalSeparator('.');
-                String tempRounded = temperature;
-                DecimalFormat df = new DecimalFormat("###.#", sfs);
-
-                if(pref == true){
-                    float tmp = Float.valueOf(tempRounded);
-                    tmp = (float) ((tmp * 1.8) + 32);
-                    tempRounded = df.format(tmp);
                 }else{
-                    float tmp = Float.valueOf(tempRounded);
-                    tempRounded = df.format(tmp);
+                    JSONArray array = new JSONArray(content);
+
+                    for(int i = 0; i < array.length(); i++){
+                        JSONObject weatherPart = array.getJSONObject(i);
+                        temperature = weatherPart.getString("temperature");
+                        pressure  = weatherPart.getString("pressure");
+                        humidity = weatherPart.getString("humidity");
+
+                    }
+
+                    Log.i("Temperature", temperature);
+                    Log.i("Pressure", pressure);
+                    Log.i("Humidity", humidity);
+
+                    DecimalFormatSymbols sfs = new DecimalFormatSymbols();
+                    sfs.setDecimalSeparator('.');
+                    String tempRounded = temperature;
+                    DecimalFormat df = new DecimalFormat("###.#", sfs);
+
+                    if(pref == true){
+                        float tmp = Float.valueOf(tempRounded);
+                        tmp = (float) ((tmp * 1.8) + 32);
+                        tempRounded = df.format(tmp);
+                    }else{
+                        float tmp = Float.valueOf(tempRounded);
+                        tempRounded = df.format(tmp);
+                    }
+
+                    if(pref == false){
+                        tempRounded = tempRounded + "\u00B0" + "C";
+                    }else{
+                        tempRounded = tempRounded + "\u00B0" + "F";
+                    }
+
+                    resultText1 = "Temperature: " + tempRounded;
+                    resultText2 = "Pressure: " + pressure + " hPa";
+                    resultText3 =  "Humidity: " + humidity + "%";
+
                 }
 
-                if(pref == false){
-                    tempRounded = tempRounded + "\u00B0" + "C";
-                }else{
-                    tempRounded = tempRounded + "\u00B0" + "F";
-                }
+                result1.setText(resultText1);
+                result2.setText(resultText2);
+                result3.setText(resultText3);
 
-                String resultText = "Temperature :     " + tempRounded +
-                        "\n\nPressure :              " + pressure + " hPa" +
-                        "\n\nHumidity :             " + humidity + "%";
-
-
-                //System.out.println(iconUrl);
-
-                result.setText(resultText);
-
-                Bitmap bitmap = Bitmap.createBitmap(
-                        500, // Width
-                        300, // Height
-                        Bitmap.Config.ARGB_8888 // Config
-                );
-
+                //Showing parameteres images
+                ImageView img1=(ImageView)findViewById(R.id.humidity);
+                img1.setVisibility(View.VISIBLE);
+                ImageView img2=(ImageView)findViewById(R.id.pressure);
+                img2.setVisibility(View.VISIBLE);
+                ImageView img3=(ImageView)findViewById(R.id.teemperature);
+                img3.setVisibility(View.VISIBLE);
 
             } catch (ExecutionException e) {
                 e.printStackTrace();
@@ -608,7 +618,7 @@ public class ThirdActivity extends AppCompatActivity {
         String content = "", result = "";
 
         ConnectionTest connectionTest = new ConnectionTest();
-        Boolean conTestResult = connectionTest.execute("http://192.168.0.105:8080/STM/getStmData").get();
+        Boolean conTestResult = connectionTest.execute(projectApiAddr + "/STM/getStmData").get();
         connectionTest.cancel(false);
 
         STMDataGet weather = new STMDataGet();
@@ -616,7 +626,7 @@ public class ThirdActivity extends AppCompatActivity {
         if(conTestResult == true){
             try {
 
-                content = weather.execute("http://192.168.0.105:8080/STM/getStmData").get();
+                content = weather.execute(projectApiAddr + "/STM/getStmData").get();
                 Log.i("content", content);
 
                 JSONArray array = new JSONArray(content);
@@ -655,7 +665,7 @@ public class ThirdActivity extends AppCompatActivity {
                     tempRounded = tempRounded + "\u00B0" + "F";
                 }
 
-                result = this.cityName + " " + currentDate + " " + tempRounded + " " + pressure + "hPa " + humidity + "%";
+                result = this.cityName + " " + currentDate + " " + tempRounded + ", " + pressure + "hPa, Hum: " + humidity + "%";
 
             } catch (ExecutionException e) {
                 e.printStackTrace();
@@ -682,7 +692,7 @@ public class ThirdActivity extends AppCompatActivity {
         String content="", result="";
 
         ConnectionTest connectionTest = new ConnectionTest();
-        Boolean conTestResult = connectionTest.execute("http://192.168.0.105:8080/STM/getStmData").get();
+        Boolean conTestResult = connectionTest.execute(projectApiAddr + "/STM/getStmData").get();
         connectionTest.cancel(false);
 
         WebDataGet webDataGet = new WebDataGet();
@@ -738,12 +748,12 @@ public class ThirdActivity extends AppCompatActivity {
 
 
                 if(pref == true){
-                    tempRounded = tempRounded + " \u00B0" + "F";
+                    tempRounded = tempRounded + "\u00B0" + "F";
                 }else{
-                    tempRounded = tempRounded + " \u00B0" + "C";
+                    tempRounded = tempRounded + "\u00B0" + "C";
                 }
 
-                result = city_name + " " + currentDate + " " + tempRounded + " " + main + " " + description + " " + pressure + " hPa "  + humidity + "%";
+                result = city_name + " " + currentDate + " " + tempRounded + " " + main + ": " + description + ", " + pressure + " hPa, Hum:"  + humidity + "%";
 
             } catch (ExecutionException e) {
                 e.printStackTrace();
@@ -815,7 +825,7 @@ public class ThirdActivity extends AppCompatActivity {
         this.cityName = loc;
 
         ConnectionTest connectionTest = new ConnectionTest();
-        Boolean conTestResult = connectionTest.execute("http://192.168.0.105:8080/STM/getStmData").get();
+        Boolean conTestResult = connectionTest.execute(projectApiAddr + "/STM/getStmData").get();
         connectionTest.cancel(true);
 
         if(conTestResult == true){

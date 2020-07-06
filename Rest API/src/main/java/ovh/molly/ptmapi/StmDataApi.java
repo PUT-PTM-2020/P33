@@ -24,12 +24,19 @@ public class StmDataApi {
         return stmDataManager.getStmDataList();
     }
 
+
     @PostMapping("/STM/postStmData")
     @ResponseStatus(value = HttpStatus.CREATED, reason = "Todo created!")
     public boolean addStmData(@RequestBody StmData stmData){
         this.stmDataId++;
         stmData.setId(this.stmDataId);
         return stmDataManager.addStmData(stmData);
+    }
+
+    @PutMapping("/STM/putStmData")
+    @ResponseStatus(value = HttpStatus.CREATED, reason = "Todo created!")
+    public boolean putStmData(@RequestBody StmData stmData){
+        return stmDataManager.putStmData(stmData);
     }
 
 }
