@@ -20,13 +20,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <stdio.h>
-#include <string.h>
-//#include ".h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "BMP280/bmp280.h"
+#include "Led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,6 +43,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
+
+SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim4;
 
@@ -74,6 +74,7 @@ static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_SPI1_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
@@ -171,12 +172,12 @@ void ESP_SendData()
 
 	size = sprintf(Data, "AT+CIPSTART=0,\"TCP\",\"164.132.104.58\",8080\r\n");
 				HAL_UART_Transmit_IT(&huart2, Data, size);
-				HAL_Delay(500);
+				HAL_Delay(200);
 				size = sprintf(Data, Data_r);
 				HAL_UART_Transmit_IT(&huart3, Data, size);
 				i = 0;
 				for(int k = 0; k < 256; k++) Data_r[k] = 0;
-				HAL_Delay(500);
+				HAL_Delay(200);
 
 				char aszJsonData[150] = {0};
 				sprintf(aszJsonData,"{\"temperature\":\"%.2f\",\"pressure\":\"%.2f\",\"humidity\":\"%.2f\"}",temperature,pressure,humidity);
@@ -197,22 +198,29 @@ void ESP_SendData()
 				HAL_Delay(200);
 
 				HAL_UART_Transmit_IT(&huart2, aszJsonRequest, size_temp);
-				HAL_Delay(300);
+				HAL_Delay(200);
 
 				size = sprintf(Data, Data_r);
 				HAL_UART_Transmit_IT(&huart3, Data, size);
 				i = 0;
 				for(int k = 0; k < 256; k++) Data_r[k] = 0;
-				HAL_Delay(500);
+				HAL_Delay(200);
 
 	size = sprintf(Data, "AT+CIPCLOSE=0\r\n");
 				HAL_UART_Transmit_IT(&huart2, Data, size);
-				HAL_Delay(500);
+				HAL_Delay(200);
 				size = sprintf(Data, Data_r);
 				HAL_UART_Transmit_IT(&huart3, Data, size);
 				i = 0;
 				for(int k = 0; k < 256; k++) Data_r[k] = 0;
-				HAL_Delay(500);
+				HAL_Delay(200);
+
+					open();
+
+					size = sprintf(Data,"%.2f 'C %.1f hPa %.2f %%",temperature,pressure,humidity);
+					showMessage(Data,size);
+					HAL_Delay(30*(size+1));
+					close();
 }
 /* USER CODE END 0 */
 
@@ -248,6 +256,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM4_Init();
   MX_USART3_UART_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
 	bmp280_init_default_params(&bmp280.params);
@@ -267,6 +276,10 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	ESP_Init();
+	max_init(&hspi1);
+	open();
+	orientate(90,0);
+	close();
 
 	while (1) {
 
@@ -376,6 +389,44 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief SPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_SPI1_Init(void)
+{
+
+  /* USER CODE BEGIN SPI1_Init 0 */
+
+  /* USER CODE END SPI1_Init 0 */
+
+  /* USER CODE BEGIN SPI1_Init 1 */
+
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN SPI1_Init 2 */
+
+  /* USER CODE END SPI1_Init 2 */
 
 }
 
@@ -506,7 +557,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD3_Pin */
   GPIO_InitStruct.Pin = LD3_Pin;
@@ -550,3 +611,5 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
